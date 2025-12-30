@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanji Study App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mount-fuji-background {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            overflow: hidden;
+        }
+
+        .mount-fuji-svg {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            opacity: 0.8;
+        }
+
+        .cloud {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50px;
+            z-index: -2;
+        }
+
+        .cloud:before {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50px;
+        }
+
+        .cloud:after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 80px;
+            height: 40px;
+            top: 20%;
+            left: -100px;
+            animation: moveCloud1 30s linear infinite;
+        }
+
+        .cloud1:before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .cloud1:after {
+            width: 60px;
+            height: 40px;
+            top: -10px;
+            right: 10px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 50px;
+            top: 15%;
+            right: -120px;
+            animation: moveCloud2 40s linear infinite;
+        }
+
+        .cloud2:before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 20px;
+        }
+
+        .cloud2:after {
+            width: 70px;
+            height: 50px;
+            top: -15px;
+            right: 15px;
+        }
+
+        .cloud3 {
+            width: 60px;
+            height: 30px;
+            top: 25%;
+            left: -80px;
+            animation: moveCloud3 35s linear infinite;
+            animation-delay: -10s;
+        }
+
+        .cloud3:before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud3:after {
+            width: 50px;
+            height: 30px;
+            top: -5px;
+            right: 10px;
+        }
+
+        .cloud4 {
+            width: 90px;
+            height: 45px;
+            top: 30%;
+            right: -100px;
+            animation: moveCloud4 25s linear infinite;
+            animation-delay: -5s;
+        }
+
+        .cloud4:before {
+            width: 55px;
+            height: 55px;
+            top: -25px;
+            left: 15px;
+        }
+
+        .cloud4:after {
+            width: 65px;
+            height: 45px;
+            top: -10px;
+            right: 10px;
+        }
+
+        @keyframes moveCloud1 {
+            0% { left: -100px; }
+            100% { left: 100%; }
+        }
+
+        @keyframes moveCloud2 {
+            0% { right: -120px; }
+            100% { right: 100%; }
+        }
+
+        @keyframes moveCloud3 {
+            0% { left: -80px; }
+            100% { left: 100%; }
+        }
+
+        @keyframes moveCloud4 {
+            0% { right: -100px; }
+            100% { right: 100%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .kanji-display {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .kanji {
+            font-size: 8rem;
+            color: #4a5568;
+            cursor: help;
+            transition: all 0.3s ease;
+            font-family: 'MS Gothic', 'Hiragino Kaku Gothic Pro', sans-serif;
+            user-select: none;
+        }
+
+        .kanji:hover {
+            transform: scale(1.1);
+            color: #e53e3e;
+        }
+
+        .kanji-info {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .kanji-info::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-bottom-color: #333;
+        }
+
+        .kanji:hover + .kanji-info {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress {
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            height: 8px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #e53e3e, #c53030);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            color: #4a5568;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-weight: bold;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #e53e3e;
+        }
+
+        .input-correct {
+            border-color: #48bb78 !important;
+            background-color: #f0fff4;
+        }
+
+        .input-incorrect {
+            border-color: #f56565 !important;
+            background-color: #fff5f5;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .library-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .library-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .library-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .close-library {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-library:hover {
+            background: #c53030;
+            transform: scale(1.1);
+        }
+
+        .library-stats {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kanji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .kanji-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .kanji-card:hover {
+            border-color: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanji-card.selected {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .kanji-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .kanji-card {
+            position: relative;
+        }
+
+        .kanji-large {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-family: 'MS Gothic', 'Hiragino Kaku Gothic Pro', sans-serif;
+        }
+
+        .kanji-reading {
+            font-size: 0.9rem;
+            color: #e53e3e;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .kanji-meaning {
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+
+        .library-actions {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .library-search {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-input {
+            width: 300px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #e53e3e;
+        }
+
+        .add-kanji-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f0fff4;
+            border-radius: 10px;
+            border: 2px solid #48bb78;
+            display: none;
+        }
+
+        .add-kanji-section.active {
+            display: block;
+        }
+
+        .add-kanji-form {
+            display: grid;
+            grid-template-columns: 1fr 2fr 3fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-kanji-input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .add-kanji-input.kanji-input {
+            font-size: 1.5rem;
+            text-align: center;
+            font-family: 'MS Gothic', 'Hiragino Kaku Gothic Pro', sans-serif;
+        }
+
+        .btn-add {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn-add:hover {
+            background: #38a169;
+        }
+
+        .btn-toggle-add {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-toggle-add:hover {
+            background: #38a169;
+        }
+
+        .btn-toggle-add.active {
+            background: #38a169;
+        }
+
+        .btn-small {
+            flex: none;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            background: #cbd5e0;
+            color: #4a5568;
+        }
+
+        .btn-small:hover {
+            background: #a0aec0;
+            transform: translateY(-1px);
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            color: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .feedback.correct {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+
+        .feedback.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .score {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 1rem;
+            color: #4a5568;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .kanji {
+                font-size: 5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mount-fuji-background">
+        <svg class="mount-fuji-svg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky gradient background -->
+            <defs>
+                <linearGradient id="mountainGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" style="stop-color:#2d3748;stop-opacity:0.7" />
+                    <stop offset="70%" style="stop-color:#4a5568;stop-opacity:0.6" />
+                    <stop offset="100%" style="stop-color:#718096;stop-opacity:0.5" />
+                </linearGradient>
+                <linearGradient id="snowGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" style="stop-color:#f7fafc;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                </linearGradient>
+                <linearGradient id="sideGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#1a202c;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#2d3748;stop-opacity:0.6" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Back mountain layers -->
+            <path d="M 0 400 L 150 200 L 300 250 L 450 180 L 600 220 L 600 400 Z" fill="#4a5568" opacity="0.6"/>
+            <path d="M 0 400 L 100 250 L 250 280 L 400 200 L 600 250 L 600 400 Z" fill="#2d3748" opacity="0.7"/>
+            
+            <!-- Main Mount Fuji body -->
+            <path d="M 50 400 L 300 120 L 550 400 Z" fill="url(#mountainGradient)" stroke="#1a202c" stroke-width="2" opacity="1"/>
+            
+            <!-- Left shadow side -->
+            <path d="M 50 400 L 300 120 L 300 400 Z" fill="url(#sideGradient)" opacity="0.5"/>
+            
+            <!-- Snow cap -->
+            <path d="M 250 160 L 300 120 L 350 160 L 330 180 L 270 180 Z" fill="url(#snowGradient)" stroke="#e2e8f0" stroke-width="1"/>
+            
+            <!-- Snow details -->
+            <path d="M 200 220 L 300 120 L 400 220 L 380 240 L 220 240 Z" fill="url(#snowGradient)" opacity="0.8"/>
+            
+            <!-- Mountain ridges -->
+            <path d="M 100 350 L 300 120 L 500 350" fill="none" stroke="#1a202c" stroke-width="1" opacity="0.7"/>
+            <path d="M 150 320 L 300 120 L 450 320" fill="none" stroke="#2d3748" stroke-width="1" opacity="0.6"/>
+            
+            <!-- Foreground hills -->
+            <path d="M 0 400 L 50 350 L 150 370 L 250 340 L 350 360 L 450 330 L 550 350 L 600 340 L 600 400 Z" fill="#2d3748" opacity="0.8"/>
+            
+            <!-- Gray-green terrain layers -->
+            <path d="M 0 400 L 100 380 L 200 385 L 300 375 L 400 380 L 500 370 L 600 375 L 600 400 Z" fill="#4a5d23" opacity="0.9"/>
+            <path d="M 0 400 L 80 390 L 180 395 L 280 385 L 380 390 L 480 385 L 580 390 L 600 385 L 600 400 Z" fill="#5a6b2a" opacity="0.9"/>
+            <path d="M 0 400 L 60 395 L 160 398 L 260 392 L 360 395 L 460 392 L 560 395 L 600 392 L 600 400 Z" fill="#6a7c32" opacity="1"/>
+            
+            <!-- Ground texture details -->
+            <circle cx="100" cy="395" r="2" fill="#3a4d1a" opacity="0.7"/>
+            <circle cx="250" cy="390" r="1.5" fill="#3a4d1a" opacity="0.7"/>
+            <circle cx="400" cy="392" r="2" fill="#3a4d1a" opacity="0.7"/>
+            <circle cx="500" cy="388" r="1" fill="#3a4d1a" opacity="0.7"/>
+            <circle cx="150" cy="397" r="1" fill="#2a3d0a" opacity="0.6"/>
+            <circle cx="350" cy="394" r="1.5" fill="#2a3d0a" opacity="0.6"/>
+        </svg>
+    </div>
+    
+    <!-- Moving clouds -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+    <div class="cloud cloud4"></div>
+    
+    <div class="container">
+        <h1>🎌 Kanji Study App</h1>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="score">
+            <span>Correct: <span id="correctCount">0</span></span>
+            <span>Total: <span id="totalCount">0</span></span>
+            <span>To Review: <span id="retryCount">0</span></span>
+        </div>
+        
+        <div class="kanji-display">
+            <div class="kanji" id="kanjiChar">運</div>
+            <div class="kanji-info" id="kanjiInfo">
+                <div><strong>Reading:</strong> うん / はこぶ</div>
+                <div><strong>Meaning:</strong> luck, to carry</div>
+            </div>
+        </div>
+        
+        <div class="question" id="questionText">
+            Enter both the reading and meaning for this kanji:
+        </div>
+        
+        <div class="input-group">
+            <div class="input-container">
+                <div class="input-field">
+                    <label class="input-label">Reading (hiragana/katakana/romaji):</label>
+                    <input type="text" id="readingInput" placeholder="e.g. うん, はこぶ, un, hakobu..." autocomplete="off">
+                </div>
+                <div class="input-field">
+                    <label class="input-label">Meaning (English):</label>
+                    <input type="text" id="meaningInput" placeholder="e.g. luck, to carry..." autocomplete="off">
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn-primary" id="checkBtn" onclick="checkAnswer()">Check Answer</button>
+            <button class="btn-secondary" id="nextBtn" onclick="nextKanji()">Next Kanji</button>
+        </div>
+
+        <div class="control-buttons">
+            <button class="btn-small" onclick="shuffleKanji()">🔀 Shuffle</button>
+            <button class="btn-small" onclick="restartSession()">🔄 Restart</button>
+            <button class="btn-small" onclick="openLibrary()">📚 Library</button>
+        </div>
+        
+        <div class="feedback hidden" id="feedback">
+        </div>
+    </div>
+
+    <!-- Library Modal -->
+    <div class="library-modal" id="libraryModal">
+        <div class="library-content">
+            <div class="library-header">
+                <div class="library-title">📚 Kanji Library</div>
+                <button class="close-library" onclick="closeLibrary()">×</button>
+            </div>
+            
+            <div class="library-stats">
+                <div>Total Kanji: <span id="totalKanjiCount">0</span></div>
+                <div>Selected (Excluded): <span id="selectedKanjiCount">0</span></div>
+                <div>Active for Study: <span id="activeKanjiCount">0</span></div>
+            </div>
+
+            <div class="library-search">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search kanji by reading or meaning..." oninput="filterKanji()">
+            </div>
+
+            <div class="library-actions">
+                <button class="btn-small" onclick="selectAllKanji()">Select All</button>
+                <button class="btn-small" onclick="deselectAllKanji()">Deselect All</button>
+                <button class="btn-small" onclick="resetSelection()">Reset Selection</button>
+                <button class="btn-small btn-toggle-add" onclick="toggleAddKanji()" id="toggleAddBtn">+ Add Kanji</button>
+            </div>
+
+            <div class="add-kanji-section" id="addKanjiSection">
+                <h4 style="margin-bottom: 15px; color: #38a169;">Add New Kanji</h4>
+                <div class="add-kanji-form">
+                    <input type="text" class="add-kanji-input kanji-input" id="newKanji" placeholder="字" maxlength="3">
+                    <input type="text" class="add-kanji-input" id="newReading" placeholder="ひらがな">
+                    <input type="text" class="add-kanji-input" id="newMeaning" placeholder="meaning">
+                    <button class="btn-add" onclick="addNewKanji()">Add</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.8rem; color: #4a5568;">Enter the kanji character, its reading(s), and English meaning.</p>
+            </div>
+
+            <div class="kanji-grid" id="kanjiGrid">
+                <!-- Kanji cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kanji data
+        const kanjiData = [
+            { kanji: "運", reading: "うん / はこぶ", meaning: "luck, to carry" },
+            { kanji: "化", reading: "ばける / カ", meaning: "to change, transform" },
+            { kanji: "器", reading: "うつわ / キ", meaning: "vessel, container" },
+            { kanji: "習", reading: "ならう / シュウ", meaning: "to learn, practice" },
+            { kanji: "科", reading: "カ", meaning: "department, field of study" },
+            { kanji: "画", reading: "えがく / ガ", meaning: "drawing, painting" },
+            { kanji: "急", reading: "いそぐ / キュウ", meaning: "urgent, sudden" },
+            { kanji: "客", reading: "きゃく / カク", meaning: "guest, customer" },
+            { kanji: "許", reading: "ゆるす / キョ", meaning: "to permit, allow" },
+            { kanji: "該", reading: "ガイ", meaning: "concerned, appropriate" },
+            { kanji: "再", reading: "さい / サイ", meaning: "again, re-" },
+            { kanji: "示", reading: "しめす / ジ", meaning: "to show" },
+            { kanji: "州", reading: "しゅう", meaning: "state, province" },
+            { kanji: "準", reading: "じゅん", meaning: "standard, preparation" },
+            { kanji: "職", reading: "しょく", meaning: "occupation, job" },
+            { kanji: "制", reading: "せい", meaning: "system, regulation" },
+            { kanji: "選", reading: "えらぶ / セン", meaning: "to choose, select" },
+            { kanji: "組", reading: "くみ / ソ", meaning: "group, team" },
+            { kanji: "達", reading: "たち / タツ", meaning: "to reach, attain" },
+            { kanji: "転", reading: "ころぶ / テン", meaning: "to turn, revolve" },
+            { kanji: "能", reading: "のう", meaning: "ability, talent" },
+            { kanji: "放", reading: "はなつ / ホウ", meaning: "to release, emit" },
+            { kanji: "訪", reading: "おとずれる / ホウ", meaning: "to visit" },
+            { kanji: "役", reading: "やく / ヤク", meaning: "role, duty" },
+            { kanji: "約", reading: "やく / ヤク", meaning: "approximately, promise" },
+            { kanji: "因", reading: "イン", meaning: "cause, factor" },
+            { kanji: "衛", reading: "エイ", meaning: "hygiene, protection" },
+            { kanji: "悦", reading: "エツ", meaning: "pleasure, joy" },
+            { kanji: "越", reading: "こえる / エツ", meaning: "to surpass, cross" },
+            { kanji: "演", reading: "エン", meaning: "performance, play" },
+            { kanji: "横", reading: "よこ / オウ", meaning: "horizontal, side" },
+            { kanji: "恩", reading: "おん", meaning: "favor, grace" },
+            { kanji: "解", reading: "とく / カイ", meaning: "to untie, solve" },
+            { kanji: "価", reading: "あたい / カ", meaning: "value, price" },
+            { kanji: "快", reading: "こころよい / カイ", meaning: "comfortable, happy" },
+            { kanji: "活", reading: "かつ / カツ", meaning: "active" },
+            { kanji: "格", reading: "カク", meaning: "status, rank" },
+            { kanji: "議", reading: "ギ", meaning: "discussion, debate" },
+            { kanji: "逆", reading: "ぎゃく / ゲキ", meaning: "reverse, opposite" },
+            { kanji: "劇", reading: "げき", meaning: "drama, play" },
+            { kanji: "元", reading: "もと / ゲン", meaning: "origin, source" },
+            { kanji: "建", reading: "たてる / ケン", meaning: "to build, establish" },
+            { kanji: "研", reading: "けん", meaning: "to study, sharpen" },
+            { kanji: "刑", reading: "ケイ", meaning: "punishment" },
+            { kanji: "件", reading: "けん", meaning: "matter, case" },
+            { kanji: "計", reading: "はかる / ケイ", meaning: "plan, measure" },
+            { kanji: "記", reading: "しるす / キ", meaning: "to write down, record" },
+            { kanji: "商", reading: "ショウ", meaning: "commerce, business" },
+            { kanji: "証", reading: "あかし / ショウ", meaning: "proof, certificate" },
+            { kanji: "笑", reading: "わらう / ショウ", meaning: "to laugh" },
+            { kanji: "城", reading: "しろ / ジョウ", meaning: "castle" },
+            { kanji: "常", reading: "じょう", meaning: "usual, normal" },
+            { kanji: "場", reading: "ば / ジョウ", meaning: "place, location" },
+            { kanji: "真", reading: "ま / シン", meaning: "true, real" },
+            { kanji: "信", reading: "しん / シン", meaning: "trust, faith" },
+            { kanji: "進", reading: "すすむ / シン", meaning: "to advance" },
+            { kanji: "振", reading: "ふる / シン", meaning: "to shake, swing" },
+            { kanji: "制", reading: "せい", meaning: "system" },
+            { kanji: "整", reading: "ととのう / セイ", meaning: "to arrange, organize" },
+            { kanji: "清", reading: "きよい / セイ", meaning: "clean, pure" },
+            { kanji: "世", reading: "せ / セ", meaning: "world, society" },
+            { kanji: "線", reading: "せん", meaning: "line, wire" },
+            { kanji: "船", reading: "ふね / セン", meaning: "ship, boat" },
+            { kanji: "想", reading: "おもう / ソウ", meaning: "thought, idea" },
+            { kanji: "送", reading: "おくる / ソウ", meaning: "to send" },
+            { kanji: "相", reading: "あい / ソウ", meaning: "mutual, together" },
+            { kanji: "代", reading: "だい / ダイ", meaning: "generation, substitute" },
+            { kanji: "便", reading: "べん / ビン", meaning: "convenience, mail" },
+            { kanji: "府", reading: "ふ", meaning: "government, administration" },
+            { kanji: "富", reading: "とむ / フ", meaning: "wealth" },
+            { kanji: "米", reading: "こめ / ベイ", meaning: "rice" },
+            { kanji: "勉", reading: "べん", meaning: "effort" },
+            { kanji: "報", reading: "ほう / ホウ", meaning: "news, report" },
+            { kanji: "理", reading: "リ", meaning: "logic, reason" },
+            { kanji: "良", reading: "よい / リョウ", meaning: "good, satisfactory" },
+            { kanji: "流", reading: "ながれる / リュウ", meaning: "to flow, current" },
+            { kanji: "両", reading: "りょう", meaning: "both, pair" },
+            { kanji: "列", reading: "れつ", meaning: "line, row" },
+            { kanji: "例", reading: "れい", meaning: "example, precedent" },
+            { kanji: "歴", reading: "レキ", meaning: "history" },
+            { kanji: "連", reading: "つれる / レン", meaning: "to link, connect" },
+            { kanji: "練", reading: "ねる / レン", meaning: "to practice, train" },
+            { kanji: "論", reading: "ロン", meaning: "theory, argument" },
+            { kanji: "副", reading: "ふく", meaning: "vice, deputy" },
+            { kanji: "舞", reading: "まう / ブ", meaning: "to dance" },
+            { kanji: "降", reading: "おりる / コウ", meaning: "to descend, fall" },
+            { kanji: "税", reading: "ゼイ", meaning: "tax" },
+            { kanji: "善", reading: "ぜん", meaning: "good, virtue" },
+            { kanji: "増", reading: "ます / ゾウ", meaning: "to increase" },
+            { kanji: "則", reading: "ソク", meaning: "rule, law" },
+            { kanji: "即", reading: "ソク", meaning: "immediate" },
+            { kanji: "続", reading: "つづく / ゾク", meaning: "to continue" },
+            { kanji: "総", reading: "ソウ", meaning: "general, overall" },
+            { kanji: "造", reading: "つくる / ゾウ", meaning: "to make, build" },
+            { kanji: "察", reading: "さっする / サツ", meaning: "to guess, observe" },
+            { kanji: "積", reading: "つむ / セキ", meaning: "to pile up" },
+            { kanji: "接", reading: "せっする / セツ", meaning: "to touch, join" },
+            { kanji: "説", reading: "せつ / セツ", meaning: "theory, explanation" },
+            { kanji: "単", reading: "たん", meaning: "single, simple" },
+            { kanji: "段", reading: "だん", meaning: "step, grade" },
+            { kanji: "直", reading: "ただしい / チョク", meaning: "straight, honest" },
+            { kanji: "定", reading: "てい", meaning: "fixed, regular" },
+            { kanji: "堂", reading: "どう", meaning: "hall, building" },
+            { kanji: "雑", reading: "ざつ", meaning: "miscellaneous" }
+        ];
+
+        let currentIndex = 0;
+        let correctCount = 0;
+        let totalAttempts = 0;
+        let kanjiSequence = [...Array(kanjiData.length).keys()]; // [0, 1, 2, 3, ...]
+        let retryQueue = []; // Queue for kanji that need to be retried
+        let retryCounter = 0; // Counter to track when to inject retry kanji
+        let currentKanjiIndex = 0; // Store the actual kanji index being displayed
+        let selectedKanji = new Set(); // Set of kanji indices that are selected (excluded from study)
+        let activeKanjiSequence = []; // Sequence of only non-selected kanji
+
+        // DOM elements
+        const kanjiChar = document.getElementById('kanjiChar');
+        const kanjiInfo = document.getElementById('kanjiInfo');
+        const readingInput = document.getElementById('readingInput');
+        const meaningInput = document.getElementById('meaningInput');
+        const feedback = document.getElementById('feedback');
+        const correctCountElement = document.getElementById('correctCount');
+        const totalCountElement = document.getElementById('totalCount');
+        const retryCountElement = document.getElementById('retryCount');
+        const progressBar = document.getElementById('progressBar');
+        const checkBtn = document.getElementById('checkBtn');
+        
+        // Library DOM elements
+        const libraryModal = document.getElementById('libraryModal');
+        const kanjiGrid = document.getElementById('kanjiGrid');
+        const totalKanjiCountElement = document.getElementById('totalKanjiCount');
+        const selectedKanjiCountElement = document.getElementById('selectedKanjiCount');
+        const activeKanjiCountElement = document.getElementById('activeKanjiCount');
+        const searchInput = document.getElementById('searchInput');
+        const addKanjiSection = document.getElementById('addKanjiSection');
+        const toggleAddBtn = document.getElementById('toggleAddBtn');
+        const newKanjiInput = document.getElementById('newKanji');
+        const newReadingInput = document.getElementById('newReading');
+        const newMeaningInput = document.getElementById('newMeaning');
+
+        // Initialize the app
+        function init() {
+            updateActiveKanjiSequence();
+            displayCurrentKanji();
+            updateScore();
+            updateProgress();
+            readingInput.focus();
+        }
+
+        // Update the sequence of kanji that are active for study (not selected/excluded)
+        function updateActiveKanjiSequence() {
+            activeKanjiSequence = kanjiSequence.filter(index => !selectedKanji.has(index));
+            if (activeKanjiSequence.length === 0) {
+                // If all kanji are selected, reset selections
+                selectedKanji.clear();
+                activeKanjiSequence = [...kanjiSequence];
+                showFeedback('All kanji were selected - resetting selections!', false);
+            }
+        }
+
+        // Display current kanji
+        function displayCurrentKanji() {
+            // Determine which kanji to show and store it
+            currentKanjiIndex = determineNextKanjiIndex();
+            const current = kanjiData[currentKanjiIndex];
+            kanjiChar.textContent = current.kanji;
+            kanjiInfo.innerHTML = `
+                <div><strong>Reading:</strong> ${current.reading}</div>
+                <div><strong>Meaning:</strong> ${current.meaning}</div>
+            `;
+            readingInput.value = '';
+            meaningInput.value = '';
+            clearInputStyling();
+            hideFeedback();
+            
+            // Re-enable the check button for the new question
+            checkBtn.disabled = false;
+        }
+
+        // Determine the next kanji index from sequence or retry queue
+        function determineNextKanjiIndex() {
+            // Check if we should show a retry kanji
+            if (retryQueue.length > 0 && retryCounter >= 15) {
+                const retryKanji = retryQueue.shift();
+                retryCounter = 0;
+                return retryKanji;
+            }
+            
+            // Normal sequence progression using active kanji only
+            if (activeKanjiSequence.length === 0) {
+                updateActiveKanjiSequence();
+            }
+            return activeKanjiSequence[currentIndex % activeKanjiSequence.length];
+        }
+
+        // Clear input field styling
+        function clearInputStyling() {
+            readingInput.classList.remove('input-correct', 'input-incorrect');
+            meaningInput.classList.remove('input-correct', 'input-incorrect');
+        }
+
+        // Check user's answer
+        function checkAnswer() {
+            const readingAnswer = readingInput.value.trim().toLowerCase();
+            const meaningAnswer = meaningInput.value.trim().toLowerCase();
+            
+            if (readingAnswer === '' || meaningAnswer === '') {
+                showFeedback('Please fill in both fields!', false);
+                return;
+            }
+
+            // Disable the check button after first use
+            checkBtn.disabled = true;
+
+            // Use the stored currentKanjiIndex instead of recalculating
+            const current = kanjiData[currentKanjiIndex];
+            const correctReading = current.reading.toLowerCase();
+            const correctMeaning = current.meaning.toLowerCase();
+
+            totalAttempts++;
+
+            // Check reading (flexible matching)
+            const readingCorrect = checkReadingMatch(readingAnswer, correctReading, current.kanji);
+            
+            // Check meaning (flexible matching)
+            const meaningCorrect = checkMeaningMatch(meaningAnswer, correctMeaning);
+
+            // Style inputs based on correctness
+            if (readingCorrect) {
+                readingInput.classList.add('input-correct');
+                readingInput.classList.remove('input-incorrect');
+            } else {
+                readingInput.classList.add('input-incorrect');
+                readingInput.classList.remove('input-correct');
+            }
+
+            if (meaningCorrect) {
+                meaningInput.classList.add('input-correct');
+                meaningInput.classList.remove('input-incorrect');
+            } else {
+                meaningInput.classList.add('input-incorrect');
+                meaningInput.classList.remove('input-correct');
+            }
+
+            // Provide feedback and handle retry logic
+            if (readingCorrect && meaningCorrect) {
+                correctCount++;
+                showFeedback('🎉 Perfect! Both reading and meaning are correct!', true);
+            } else {
+                // Add this kanji to retry queue if it's not already there
+                if (!retryQueue.includes(currentKanjiIndex)) {
+                    retryQueue.push(currentKanjiIndex);
+                }
+                
+                if (readingCorrect) {
+                    showFeedback(`✨ Reading is correct! But the meaning should be: "${current.meaning}" - Will ask again in 15 kanji.`, false);
+                } else if (meaningCorrect) {
+                    showFeedback(`✨ Meaning is correct! But the reading should be: "${current.reading}" - Will ask again in 15 kanji.`, false);
+                } else {
+                    showFeedback(`❌ Both incorrect. Reading: "${current.reading}", Meaning: "${current.meaning}" - Will ask again in 15 kanji.`, false);
+                }
+            }
+
+            updateScore();
+            updateProgress();
+        }
+
+        // Check if reading matches (flexible matching for different input formats)
+        function checkReadingMatch(userReading, correctReading, kanji) {
+            // Direct match
+            if (correctReading.includes(userReading)) return true;
+            
+            // Common romaji conversions
+            const romaji = {
+                '運': ['un', 'hakobu'],
+                '化': ['bakeru', 'ka'],
+                '器': ['utsuwa', 'ki'],
+                '習': ['narau', 'shuu', 'shu'],
+                '科': ['ka'],
+                '画': ['egaku', 'ga'],
+                '急': ['isogu', 'kyuu', 'kyu'],
+                '客': ['kyaku', 'kaku'],
+                '許': ['yurusu', 'kyo'],
+                '該': ['gai'],
+                '再': ['sai'],
+                '示': ['shimesu', 'ji'],
+                '州': ['shuu', 'shu'],
+                '準': ['jun'],
+                '職': ['shoku'],
+                '制': ['sei'],
+                '選': ['erabu', 'sen'],
+                '組': ['kumi', 'so'],
+                '達': ['tachi', 'tatsu'],
+                '転': ['korobu', 'ten'],
+                '能': ['nou', 'no'],
+                '放': ['hanatsu', 'hou', 'ho'],
+                '訪': ['otozureru', 'hou', 'ho'],
+                '役': ['yaku'],
+                '約': ['yaku'],
+                '因': ['in'],
+                '衛': ['ei'],
+                '悦': ['etsu'],
+                '越': ['koeru', 'etsu'],
+                '演': ['en'],
+                '横': ['yoko', 'ou', 'o'],
+                '恩': ['on'],
+                '解': ['toku', 'kai'],
+                '価': ['atai', 'ka'],
+                '快': ['kokoroyoi', 'kai'],
+                '活': ['katsu'],
+                '格': ['kaku'],
+                '議': ['gi'],
+                '逆': ['gyaku', 'geki'],
+                '劇': ['geki'],
+                '元': ['moto', 'gen'],
+                '建': ['tateru', 'ken'],
+                '研': ['ken'],
+                '刑': ['kei'],
+                '件': ['ken'],
+                '計': ['hakaru', 'kei'],
+                '記': ['shirusu', 'ki'],
+                '商': ['shou', 'sho'],
+                '証': ['akashi', 'shou', 'sho'],
+                '笑': ['warau', 'shou', 'sho'],
+                '城': ['shiro', 'jou', 'jo'],
+                '常': ['jou', 'jo'],
+                '場': ['ba', 'jou', 'jo'],
+                '真': ['ma', 'shin'],
+                '信': ['shin'],
+                '進': ['susumu', 'shin'],
+                '振': ['furu', 'shin'],
+                '整': ['totonou', 'sei'],
+                '清': ['kiyoi', 'sei'],
+                '世': ['se', 'yo'],
+                '線': ['sen'],
+                '船': ['fune', 'sen'],
+                '想': ['omou', 'sou', 'so'],
+                '送': ['okuru', 'sou', 'so'],
+                '相': ['ai', 'sou', 'so'],
+                '代': ['dai'],
+                '便': ['ben', 'bin'],
+                '府': ['fu'],
+                '富': ['tomu', 'fu'],
+                '米': ['kome', 'bei'],
+                '勉': ['ben'],
+                '報': ['hou', 'ho'],
+                '理': ['ri'],
+                '良': ['yoi', 'ryou', 'ryo'],
+                '流': ['nagareru', 'ryuu', 'ryu'],
+                '両': ['ryou', 'ryo'],
+                '列': ['retsu'],
+                '例': ['rei'],
+                '歴': ['reki'],
+                '連': ['tsureru', 'ren'],
+                '練': ['neru', 'ren'],
+                '論': ['ron'],
+                '副': ['fuku'],
+                '舞': ['mau', 'bu'],
+                '降': ['oriru', 'kou', 'ko'],
+                '税': ['zei'],
+                '善': ['zen'],
+                '増': ['masu', 'zou', 'zo'],
+                '則': ['soku'],
+                '即': ['soku'],
+                '続': ['tsuduku', 'zoku'],
+                '総': ['sou', 'so'],
+                '造': ['tsukuru', 'zou', 'zo'],
+                '察': ['sassuru', 'satsu'],
+                '積': ['tsumu', 'seki'],
+                '接': ['sessuru', 'setsu'],
+                '説': ['setsu'],
+                '単': ['tan'],
+                '段': ['dan'],
+                '直': ['tadashii', 'choku'],
+                '定': ['tei'],
+                '堂': ['dou', 'do'],
+                '雑': ['zatsu']
+            };
+            
+            if (romaji[kanji]) {
+                return romaji[kanji].some(reading => userReading.includes(reading) || reading.includes(userReading));
+            }
+            
+            return false;
+        }
+
+        // Check if meaning matches (flexible matching)
+        function checkMeaningMatch(userMeaning, correctMeaning) {
+            // Direct inclusion check
+            if (correctMeaning.includes(userMeaning) || userMeaning.includes(correctMeaning)) return true;
+            
+            // Check for key words
+            const meaningWords = correctMeaning.split(/[,\s]+/);
+            const userWords = userMeaning.split(/[,\s]+/);
+            
+            return meaningWords.some(word => 
+                userWords.some(userWord => 
+                    word.includes(userWord) || userWord.includes(word)
+                )
+            );
+        }
+
+        // Show feedback
+        function showFeedback(message, isCorrect) {
+            feedback.textContent = message;
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+        }
+
+        // Hide feedback
+        function hideFeedback() {
+            feedback.className = 'feedback hidden';
+        }
+
+        // Move to next kanji
+        function nextKanji() {
+            // If we just showed a retry kanji, don't increment the main counter
+            if (retryQueue.length > 0 && retryCounter === 0) {
+                // We just showed a retry, so we don't increment currentIndex
+                retryCounter++;
+            } else {
+                currentIndex++;
+                retryCounter++;
+            }
+            
+            displayCurrentKanji();
+            readingInput.focus();
+        }
+
+        // Shuffle the kanji sequence
+        function shuffleKanji() {
+            // Fisher-Yates shuffle algorithm on the base sequence
+            for (let i = kanjiSequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [kanjiSequence[i], kanjiSequence[j]] = [kanjiSequence[j], kanjiSequence[i]];
+            }
+            
+            // Update active sequence and reset position
+            updateActiveKanjiSequence();
+            currentIndex = 0;
+            retryCounter = 0;
+            displayCurrentKanji();
+            showFeedback('🔀 Kanji order shuffled! Starting from the beginning.', true);
+        }
+
+        // Restart the study session
+        function restartSession() {
+            currentIndex = 0;
+            correctCount = 0;
+            totalAttempts = 0;
+            retryQueue = [];
+            retryCounter = 0;
+            currentKanjiIndex = 0;
+            kanjiSequence = [...Array(kanjiData.length).keys()]; // Reset to original order
+            updateActiveKanjiSequence(); // Update active sequence
+            
+            updateScore();
+            updateProgress();
+            displayCurrentKanji();
+            showFeedback('🔄 Session restarted! All progress reset.', true);
+        }
+
+        // Update score display
+        function updateScore() {
+            correctCountElement.textContent = correctCount;
+            totalCountElement.textContent = totalAttempts;
+            retryCountElement.textContent = retryQueue.length;
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const sequenceLength = activeKanjiSequence.length || 1;
+            const progress = ((currentIndex % sequenceLength) / sequenceLength) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Library Functions
+        function openLibrary() {
+            populateLibrary();
+            updateLibraryStats();
+            searchInput.value = ''; // Clear search when opening
+            addKanjiSection.classList.remove('active'); // Close add section
+            toggleAddBtn.classList.remove('active');
+            toggleAddBtn.textContent = '+ Add Kanji';
+            libraryModal.style.display = 'flex';
+        }
+
+        function closeLibrary() {
+            libraryModal.style.display = 'none';
+        }
+
+        function populateLibrary(filteredData = null) {
+            kanjiGrid.innerHTML = '';
+            const dataToShow = filteredData || kanjiData;
+            
+            dataToShow.forEach((kanji, originalIndex) => {
+                // If showing filtered data, we need to find the original index
+                const index = filteredData ? kanjiData.indexOf(kanji) : originalIndex;
+                
+                const kanjiCard = document.createElement('div');
+                kanjiCard.className = `kanji-card ${selectedKanji.has(index) ? 'selected' : ''}`;
+                kanjiCard.onclick = () => toggleKanjiSelection(index);
+                
+                kanjiCard.innerHTML = `
+                    <div class="kanji-large">${kanji.kanji}</div>
+                    <div class="kanji-reading">${kanji.reading}</div>
+                    <div class="kanji-meaning">${kanji.meaning}</div>
+                `;
+                
+                kanjiGrid.appendChild(kanjiCard);
+            });
+        }
+
+        function toggleKanjiSelection(index) {
+            // Find the kanji card by looking for the one with matching kanji character
+            const kanjiChar = kanjiData[index].kanji;
+            let kanjiCard = null;
+            
+            Array.from(kanjiGrid.children).forEach(card => {
+                if (card.querySelector('.kanji-large').textContent === kanjiChar) {
+                    kanjiCard = card;
+                }
+            });
+            
+            if (!kanjiCard) return; // Safety check
+            
+            if (selectedKanji.has(index)) {
+                selectedKanji.delete(index);
+                kanjiCard.classList.remove('selected');
+            } else {
+                selectedKanji.add(index);
+                kanjiCard.classList.add('selected');
+            }
+            
+            updateActiveKanjiSequence();
+            updateLibraryStats();
+            
+            // Reset current position if needed
+            if (activeKanjiSequence.length > 0) {
+                currentIndex = 0;
+                retryQueue = retryQueue.filter(idx => !selectedKanji.has(idx));
+            }
+        }
+
+        function selectAllKanji() {
+            kanjiData.forEach((_, index) => {
+                selectedKanji.add(index);
+            });
+            // Update all visible cards
+            Array.from(kanjiGrid.children).forEach(card => {
+                card.classList.add('selected');
+            });
+            updateActiveKanjiSequence();
+            updateLibraryStats();
+        }
+
+        function deselectAllKanji() {
+            selectedKanji.clear();
+            // Update all visible cards
+            Array.from(kanjiGrid.children).forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateActiveKanjiSequence();
+            updateLibraryStats();
+            currentIndex = 0;
+            retryQueue = [];
+        }
+
+        function resetSelection() {
+            deselectAllKanji();
+            showFeedback('All selections cleared! All kanji are now active for study.', true);
+        }
+
+        function updateLibraryStats() {
+            totalKanjiCountElement.textContent = kanjiData.length;
+            selectedKanjiCountElement.textContent = selectedKanji.size;
+            activeKanjiCountElement.textContent = activeKanjiSequence.length;
+        }
+
+        // Search and Filter Functions
+        function filterKanji() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                populateLibrary();
+                return;
+            }
+            
+            const filteredData = kanjiData.filter(kanji => {
+                const reading = kanji.reading.toLowerCase();
+                const meaning = kanji.meaning.toLowerCase();
+                const kanjiChar = kanji.kanji.toLowerCase();
+                
+                return reading.includes(searchTerm) || 
+                       meaning.includes(searchTerm) || 
+                       kanjiChar.includes(searchTerm);
+            });
+            
+            populateLibrary(filteredData);
+        }
+
+        // Add Kanji Functions
+        function toggleAddKanji() {
+            const isActive = addKanjiSection.classList.contains('active');
+            
+            if (isActive) {
+                addKanjiSection.classList.remove('active');
+                toggleAddBtn.classList.remove('active');
+                toggleAddBtn.textContent = '+ Add Kanji';
+            } else {
+                addKanjiSection.classList.add('active');
+                toggleAddBtn.classList.add('active');
+                toggleAddBtn.textContent = '- Close Add';
+                newKanjiInput.focus();
+            }
+        }
+
+        function addNewKanji() {
+            const kanji = newKanjiInput.value.trim();
+            const reading = newReadingInput.value.trim();
+            const meaning = newMeaningInput.value.trim();
+            
+            // Validation
+            if (!kanji || !reading || !meaning) {
+                alert('Please fill in all fields: kanji, reading, and meaning.');
+                return;
+            }
+            
+            if (kanji.length > 3) {
+                alert('Kanji field should contain only 1-3 characters.');
+                return;
+            }
+            
+            // Check if kanji already exists
+            const exists = kanjiData.some(k => k.kanji === kanji);
+            if (exists) {
+                alert(`Kanji "${kanji}" already exists in the collection.`);
+                return;
+            }
+            
+            // Add new kanji to data
+            const newKanjiObj = {
+                kanji: kanji,
+                reading: reading,
+                meaning: meaning
+            };
+            
+            kanjiData.push(newKanjiObj);
+            
+            // Update sequences and indexes
+            const newIndex = kanjiData.length - 1;
+            kanjiSequence.push(newIndex);
+            updateActiveKanjiSequence();
+            
+            // Add romaji entry for the new kanji (simplified)
+            // This would need to be expanded for full functionality
+            
+            // Clear form
+            newKanjiInput.value = '';
+            newReadingInput.value = '';
+            newMeaningInput.value = '';
+            
+            // Refresh library display
+            populateLibrary();
+            updateLibraryStats();
+            
+            // Show success message
+            showFeedback(`✅ Successfully added kanji "${kanji}" to your study collection!`, true);
+            
+            // Scroll to the new kanji (it will be at the end)
+            setTimeout(() => {
+                const kanjiCards = kanjiGrid.children;
+                if (kanjiCards.length > 0) {
+                    kanjiCards[kanjiCards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+
+        // Handle Enter key press for both inputs
+        readingInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (meaningInput.value.trim() === '') {
+                    meaningInput.focus();
+                } else if (!checkBtn.disabled) {
+                    checkAnswer();
+                }
+            }
+        });
+
+        meaningInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !checkBtn.disabled) {
+                checkAnswer();
+            }
+        });
+
+        // Add event listeners for the add kanji form
+        newKanjiInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                newReadingInput.focus();
+            }
+        });
+
+        newReadingInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                newMeaningInput.focus();
+            }
+        });
+
+        newMeaningInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addNewKanji();
+            }
+        });
+
+        // Initialize the app when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
